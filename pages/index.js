@@ -1,8 +1,11 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import Header from "../components/Header";
-import LotteryEntrance from "../components/LotteryEntrance";
+import TwitterLoanTerms from "../components/TwitterLoanTerms";
 import { useMoralis } from "react-moralis";
+
+
+
 
 const supportedChains = ["137", "5"];
 
@@ -17,19 +20,27 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Header />
-      {isWeb3Enabled ? (
-        <div>
-          {supportedChains.includes(parseInt(chainId).toString()) ? (
-            <div className="flex flex-row">
-              <LotteryEntrance className="p-8" />
-            </div>
-          ) : (
-            <div>{`Please switch to a supported chainId. The supported Chain Ids are: ${supportedChains}`}</div>
-          )}
-        </div>
-      ) : (
-        <div>Please connect to a Wallet</div>
-      )}
-    </div>
-  );
+      {
+        isWeb3Enabled ? (
+          <div>
+            {supportedChains.includes(parseInt(chainId).toString()) ? (
+
+              <p>
+                <div className="flex flex-row">
+                  <TwitterLoanTerms className="p-8" />
+                  {/* <button onClick={async () => {
+                    await getTwitterHandle()
+                  }}>Click Now</button> */}
+                </div>
+              </p>
+            ) : (
+              <div>{`Please switch to a supported chainId. The supported Chain Ids are: ${supportedChains}`}</div>
+            )}
+          </div>
+        ) : (
+          <div>Please connect to a Wallet</div>
+        )}
+    </div>)
+
+
 }

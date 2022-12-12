@@ -3,12 +3,13 @@ import { contractAddresses, abi } from "../constants"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { useEffect, useState } from "react"
 import { useNotification } from "web3uikit"
-import { ethers } from "ethers"
 import axios from "axios"
-import TwitterLogin from "react-twitter-login";
+import { signIn, signOut, useSession } from "next-auth/react"
 
-export default function LotteryEntrance() {
-    const { Moralis, isWeb3Enabled, chainId: chainIdHex, account } = useMoralis()
+
+
+export default function TwitterLoanTerms() {
+    const { Moralis, isWeb3Enabled, chainId: chainIdHex, account: walletAddress } = useMoralis()
     // These get re-rendered every time due to our connect button!
     const chainId = parseInt(chainIdHex)
     // console.log(`ChainId is ${chainId}`)
@@ -20,18 +21,22 @@ export default function LotteryEntrance() {
     const [loanAmt, setLoanAmt] = useState(0)
     const [loanDuration, setLoanDuration] = useState(0)
     const [loanInterest, setLoanInterest] = useState(0)
-    const [twitterHandle, setTwitterHandle] = useState(null)
+    const [twitterHandle, setTwitterHandle] = useState("")
+    const [loanTermsLoading, setLoanTermsLoading] = useState(false)
+    const [loanTermsProvided, setLoanTermsProvided] = useState(false)
 
     const dispatch = useNotification()
+    const { data: session } = useSession()
 
-    let tempLoanAmt = "0"
-    let tempLoanDuration = "0"
-    let tempLoanInterest = "0"
-    let tempTwitterHandle = undefined
+    let tempLoanAmt = 0
+    let tempLoanDuration = 0
+    let tempLoanInterest = 0
+    let tempTwitterHandle = ""
+    let tempLoanTermsLoading = false
+    let tempLoanTermsProvided = false
 
-    const authHandler = (err, data) => {
-        console.log(err, data);
-    }
+
+
 
 
     const {
@@ -50,7 +55,7 @@ export default function LotteryEntrance() {
             _duration: loanDuration,
             _APR: loanInterest,
             _metadataURI: twitterHandle,
-            _receiver: account
+            _receiver: walletAddress
 
         },
     })
@@ -74,16 +79,24 @@ export default function LotteryEntrance() {
         setLoanDuration(tempLoanDuration)
         setLoanInterest(tempLoanInterest)
         setTwitterHandle(tempTwitterHandle)
+        setLoanTermsProvided(true)
     }
 
-    async function getApiValues(tempTwitterHandle) {
+    async function getApiValues() {
         // const res = await fetch("http://127.0.0.1:8000/" + tempTwitterHandle)
         // const data = await res.json()
         // console.log(data)
-        const url = "http://127.0.0.1:8000/" + tempTwitterHandle
+        console.log("SESSION: ", session)
+        tempLoanTermsLoading = true
+        console.log("Loan terms loading: ", loanTermsLoading)
+        setTwitterHandle(session.user.username)
+        tempTwitterHandle = session.user.username
+        console.log("TWITTER HANDLE: ", tempTwitterHandle)
+        const url = `http://127.0.0.1:8000/${tempTwitterHandle}`
+        console.log(url)
         const response = await axios.get(url)
         let twitterScore = response.data.score ? response.data.score : 0
-
+        console.log("TWITTER SCORE: ", twitterScore)
         if (twitterScore > 0 && twitterScore < 10) {
             tempLoanAmt = 100000000
             tempLoanDuration = 2592000
@@ -100,11 +113,22 @@ export default function LotteryEntrance() {
             tempLoanAmt = 1500000000
             tempLoanDuration = 2592000
             tempLoanInterest = 2000
-        } else if (twitterScore = 100) {
+        } else if (twitterScore === 100) {
             tempLoanAmt = 2000000000
             tempLoanDuration = 2592000
             tempLoanInterest = 2000
+        } else {
+            tempLoanAmt = 0
+            tempLoanDuration = 0
+            tempLoanInterest = 0
         }
+        console.log("LOAN AMT: ", tempLoanAmt)
+        tempLoanTermsLoading = false
+        tempLoanTermsProvided = true
+        updateLoanTerms()
+        setLoanTermsProvided(true)
+
+
         // var axios = require('axios');
         // var qs = require('qs');
         // // var data = qs.stringify({
@@ -169,50 +193,66 @@ export default function LotteryEntrance() {
 
     return (
         <div className="p-5">
-            <h1 className="py-4 px-4 font-bold text-3xl">Enter Your Twitter Handle</h1>
-            {raffleAddress ? (
-                <>
-                    <TwitterLogin
-                        authCallback={authHandler}
-                        consumerKey={CONSUMER_KEY}
-                        consumerSecret={CONSUMER_SECRET}
-                    />
-                    <button onClick={async () => {
-                        tempTwitterHandle = document.getElementById("twitterHandle").value
-                        await getApiValues(tempTwitterHandle)
-                        updateLoanTerms()
-                    }}
-                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="twitterButton" > Check Loan Terms </button>
-                    {loanAmt !== "0" ? (
+            {session ?
+                (<>Signed in as {session.user.name}
+                    <br />
+                    <button onClick={() => {
+                        signOut()
+
+                    }}>Sign out</button><br />
+
+                    {raffleAddress ? (
                         <>
-                            <div>Loan Amt : {loanAmt / 10 ** 6 + " USDC"}</div>
-                            <div>Loan Duration : {loanDuration / (60 * 60 * 24) + " days"}</div>
-                            <div>Loan Interest : {loanInterest / 100 + " %"}</div>
-                            <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="loanRequestButton"
+
+                            {loanAmt !== 0 ? (
+                                <>  <div>
+
+
+                                    <div>Loan Amt : {loanAmt / 10 ** 6 + " USDC"}</div>
+                                    <div>Loan Duration : {loanDuration / (60 * 60 * 24) + " days"}</div>
+                                    <div>Loan Interest : {loanInterest / 100 + " %"}</div>
+                                </div>
+                                    <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="SubmitLoanRequest"
+                                        onClick={async () => {
+                                            console.log("Submitting Bid", loanAmt, loanDuration, loanInterest, twitterHandle, walletAddress)
+                                            await submitBid({
+                                                // onComplete:
+                                                // onError:
+                                                onSuccess: handleSuccess,
+                                                onError: (error) => console.log(error),
+                                            })
+                                        }
+                                        }
+                                        disabled={isLoading || isFetching}
+
+
+
+                                    >Submit Loan Request</button>
+                                </>
+
+
+                            ) : (<button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="RequestLoanTerms"
                                 onClick={async () => {
-                                    console.log("Submitting Bid", loanAmt, loanDuration, loanInterest, twitterHandle, account)
-                                    await submitBid({
-                                        // onComplete:
-                                        // onError:
-                                        onSuccess: handleSuccess,
-                                        onError: (error) => console.log(error),
-                                    })
+                                    console.log("Requesting Loan Terms for", walletAddress)
+                                    await getApiValues()
                                 }
                                 }
-                                disabled={isLoading || isFetching}
+                                disabled={tempLoanTermsLoading}
+                            >Request Loan terms</button>)}
 
-
-
-                            >Submit Loan Request</button>
                         </>
+                    ) : (
+                        <div>Please connect to a supported chain </div>
+                    )}
 
 
-                    ) : (<div></div>)}
+                </>) : (<>
+                    <button onClick={async () => {
+                        await signIn()
+                    }}>Sign in with Twitter</button>
+                </>)}
+            {/* <h1 className="py-4 px-4 font-bold text-3xl">Enter Your Twitter Handle</h1> */}
 
-                </>
-            ) : (
-                <div>Please connect to a supported chain </div>
-            )}
         </div>
     )
 }
