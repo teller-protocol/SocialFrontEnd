@@ -7,6 +7,11 @@ export default NextAuth({
             clientId: process.env.TWITTER_CLIENT_ID,
             clientSecret: process.env.TWITTER_CLIENT_SECRET,
             version: "2.0",
+            // authorization: {
+            //     params: {
+            //         scope: ["users.read", "tweets.read"]
+            //     }
+            // }
 
         })
     ],
@@ -16,8 +21,11 @@ export default NextAuth({
             // console.log("token", token)
             // console.log("account", account)
             if (account) {
-                token.accessToken = account.access_token
-                token.refreshToken = account.refresh_token
+                // console.log("account", account)
+                // console.log("token", token)
+                // console.log("profile", profile)
+                // token.accessToken = account.access_token
+                // token.refreshToken = account.refresh_token
                 token.username = await profile.data.username
 
             }

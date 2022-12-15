@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { useNotification } from "web3uikit"
 import axios from "axios"
 import { signIn, signOut, useSession } from "next-auth/react"
+import Link from 'next/link'
 
 
 
@@ -79,8 +80,10 @@ export default function TwitterLoanTerms() {
         setLoanDuration(tempLoanDuration)
         setLoanInterest(tempLoanInterest)
         setTwitterHandle(tempTwitterHandle)
-        setLoanTermsProvided(true)
+
     }
+
+
 
     async function getApiValues() {
         // const res = await fetch("http://127.0.0.1:8000/" + tempTwitterHandle)
@@ -88,6 +91,7 @@ export default function TwitterLoanTerms() {
         // console.log(data)
         console.log("SESSION: ", session)
         tempLoanTermsLoading = true
+        setLoanTermsLoading(tempLoanTermsLoading)
         console.log("Loan terms loading: ", loanTermsLoading)
         setTwitterHandle(session.user.username)
         tempTwitterHandle = session.user.username
@@ -125,8 +129,10 @@ export default function TwitterLoanTerms() {
         console.log("LOAN AMT: ", tempLoanAmt)
         tempLoanTermsLoading = false
         tempLoanTermsProvided = true
+        setLoanTermsLoading(tempLoanTermsLoading)
+        setLoanTermsProvided(tempLoanTermsProvided)
         updateLoanTerms()
-        setLoanTermsProvided(true)
+
 
 
         // var axios = require('axios');
@@ -153,11 +159,11 @@ export default function TwitterLoanTerms() {
 
     }
 
-    useEffect(() => {
-        if (isWeb3Enabled) {
-            updateLoanTerms()
-        }
-    }, [isWeb3Enabled])
+    // useEffect(() => {
+    //     if (isWeb3Enabled) {
+    //         updateLoanTerms()
+    //     }
+    // }, [isWeb3Enabled])
     // no list means it'll update everytime anything changes or happens
     // empty list means it'll run once after the initial rendering
     // and dependencies mean it'll run whenever those things in the list change
@@ -174,7 +180,7 @@ export default function TwitterLoanTerms() {
     const handleNewNotification = () => {
         dispatch({
             type: "info",
-            message: "Transaction Complete!",
+            message: "Transaction Complete",
             title: "Transaction Notification",
             position: "topR",
             icon: "bell",
@@ -184,7 +190,6 @@ export default function TwitterLoanTerms() {
     const handleSuccess = async (tx) => {
         try {
             await tx.wait(1)
-            updateUIValues()
             handleNewNotification(tx)
         } catch (error) {
             console.log(error)
@@ -194,25 +199,25 @@ export default function TwitterLoanTerms() {
     return (
         <div className="p-5">
             {session ?
-                (<>Signed in as {session.user.name}
+                (<><h3 className="font-bold">Signed in as {session.user.name}</h3>
                     <br />
-                    <button onClick={() => {
+                    <button className="bg-blue-200 hover:bg-blue-500 text-black font-bold py-2 px-4 rounded ml-auto" type="button" id="signout" onClick={() => {
                         signOut()
 
-                    }}>Sign out</button><br />
+                    }}>Sign out from Twitter</button>
 
                     {raffleAddress ? (
-                        <>
+                        <div>
 
-                            {loanAmt !== 0 ? (
-                                <>  <div>
+                            {(tempLoanTermsProvided == true || loanTermsProvided == true) ? (
+                                <>  <div className="group  py-4 px-4 hover:shadow-lg ">
 
 
-                                    <div>Loan Amt : {loanAmt / 10 ** 6 + " USDC"}</div>
-                                    <div>Loan Duration : {loanDuration / (60 * 60 * 24) + " days"}</div>
-                                    <div>Loan Interest : {loanInterest / 100 + " %"}</div>
+                                    <div className="text-xl font-semibold">Loan Amount : {loanAmt != 0 ? loanAmt / 10 ** 6 : 0} USDC</div>
+                                    <div className="text-xl font-semibold">Loan Duration : {loanAmt != 0 ? loanDuration / (60 * 60 * 24) : 0} days</div>
+                                    <div className="text-xl font-semibold">Loan APY : {loanInterest != 0 ? loanInterest / 100 : 0} %</div>
                                 </div>
-                                    <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="SubmitLoanRequest"
+                                    <button className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="SubmitLoanRequest"
                                         onClick={async () => {
                                             console.log("Submitting Bid", loanAmt, loanDuration, loanInterest, twitterHandle, walletAddress)
                                             await submitBid({
@@ -227,29 +232,40 @@ export default function TwitterLoanTerms() {
 
 
 
-                                    >Submit Loan Request</button>
+                                    >{isLoading || isFetching ? (<div className="animate-spin spinner-border h-8 w-8 border-b-2 rounded-full"></div>) : (<><div>Submit Loan Request</div>
+                                    </>)}</button>
+                                    <br />
+                                    <br />
+
+                                    <div class="grid-child-element">Once the trx is submitted go <Link href="https://app.teller.org/polygon/market/25">
+                                        <a className="underline">here</a>
+                                    </Link> to check the loan status</div>
+
                                 </>
 
 
-                            ) : (<button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="RequestLoanTerms"
-                                onClick={async () => {
-                                    console.log("Requesting Loan Terms for", walletAddress)
-                                    await getApiValues()
-                                }
-                                }
-                                disabled={tempLoanTermsLoading}
-                            >Request Loan terms</button>)}
+                            ) : (<>
+                                <br />
+                                <button className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="RequestLoanTerms"
+                                    onClick={async () => {
+                                        console.log("Requesting Loan Terms for", walletAddress)
+                                        await getApiValues()
+                                    }
+                                    }
+                                    disabled={loanTermsLoading}
+                                >{loanTermsLoading ? (<div className="animate-spin spinner-border h-8 w-8 border-b-2 rounded-full"></div>) : (<div>Request Loan Terms</div>)}</button></>)}
 
-                        </>
+                        </div>
                     ) : (
                         <div>Please connect to a supported chain </div>
                     )}
 
 
                 </>) : (<>
-                    <button onClick={async () => {
+                    <h3 className="py-2 text-xl "> Sign into Twitter to provide loan terms</h3>
+                    <button className="bg-blue-200 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="SubmitLoanRequest" onClick={async () => {
                         await signIn()
-                    }}>Sign in with Twitter</button>
+                    }}>Sign in</button>
                 </>)}
             {/* <h1 className="py-4 px-4 font-bold text-3xl">Enter Your Twitter Handle</h1> */}
 
