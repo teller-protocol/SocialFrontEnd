@@ -201,22 +201,25 @@ export default function TwitterLoanTerms() {
             {session ?
                 (<><h3 className="font-bold">Signed in as {session.user.name}</h3>
                     <br />
-                    <button className="bg-blue-200 hover:bg-blue-500 text-black font-bold py-2 px-4 rounded ml-auto" type="button" id="signout" onClick={() => {
+                    <button className="bg-blue-200 hover:bg-blue-500 text-black text-xs font-bold py-2 px-4 rounded ml-auto" type="button" id="signout" onClick={() => {
                         signOut()
 
                     }}>Sign out from Twitter</button>
+                    <br />
 
                     {raffleAddress ? (
                         <div>
 
                             {(tempLoanTermsProvided == true || loanTermsProvided == true) ? (
-                                <>  <div className="group  py-4 px-4 hover:shadow-lg ">
+                                <><br />
+                                    <div className="group border-solid border-4 border-light-blue-500  py-4 px-4 hover:shadow-lg ">
 
 
-                                    <div className="text-xl font-semibold">Loan Amount : {loanAmt != 0 ? loanAmt / 10 ** 6 : 0} USDC</div>
-                                    <div className="text-xl font-semibold">Loan Duration : {loanAmt != 0 ? loanDuration / (60 * 60 * 24) : 0} days</div>
-                                    <div className="text-xl font-semibold">Loan APY : {loanInterest != 0 ? loanInterest / 100 : 0} %</div>
-                                </div>
+                                        <div className="text-xl">Loan Amount : {loanAmt != 0 ? loanAmt / 10 ** 6 : 0} USDC</div>
+                                        <div className="text-xl">Loan Duration : {loanAmt != 0 ? loanDuration / (60 * 60 * 24) : 0} days</div>
+                                        <div className="text-xl ">Loan APY : {loanInterest != 0 ? loanInterest / 100 : 0} %</div>
+                                    </div>
+                                    <br />
                                     <button className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-auto" type="button" id="SubmitLoanRequest"
                                         onClick={async () => {
                                             console.log("Submitting Bid", loanAmt, loanDuration, loanInterest, twitterHandle, walletAddress)
