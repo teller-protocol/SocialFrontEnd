@@ -22,9 +22,8 @@
   functions = "functions"
 [build.environment]
   CI = "false"
-  YARN_VERSION = "3.2.1"
-  YARN_CACHE_FOLDER = "/opt/buildhome/.yarn_cache"
-  NODE_VERSION = "16.16.0"
+  YARN_VERSION = "1.22.10"
+  NODE_VERSION = "18.12.1"
 
 [context."release/*"]
   command = "yarn build:staging"
