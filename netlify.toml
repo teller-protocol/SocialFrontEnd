@@ -35,10 +35,6 @@
 [context.production.environment]
   CI = "true"
 
-[[plugins]]
-  package = "/plugins/builder"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+
+
