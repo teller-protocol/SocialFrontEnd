@@ -5,7 +5,7 @@
   targetPort = 3000
 
   # The files to publish will output here
-  publish = "dist"
+  publish = ".next"
 
   functions = "functions"
 
@@ -14,10 +14,10 @@
 #  ignore = "./netlify_ignore.sh"
 
   # The command to run to publish
-  command = "yarn cypress run --component --record && yarn build"
+  command = "yarn build"
 
   # The files to publish will output here
-  publish = "dist"
+  publish = ".next"
 
   functions = "functions"
 [build.environment]
@@ -25,13 +25,8 @@
   YARN_VERSION = "1.22.10"
   NODE_VERSION = "18.12.1"
 
-[context."release/*"]
-  command = "yarn build:staging"
-[context."release/*".environment]
-  CI = "true"
-
 [context.production]
-  command = "yarn build:prod"
+  command = "yarn build"
 [context.production.environment]
   CI = "true"
 
