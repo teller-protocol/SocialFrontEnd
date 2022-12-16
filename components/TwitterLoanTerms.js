@@ -240,7 +240,7 @@ export default function TwitterLoanTerms() {
                                     <br />
                                     <br />
 
-                                    <div class="grid-child-element">Once the trx is submitted go <Link href="https://app.teller.org/polygon/market/25">
+                                    <div >Once the trx is submitted go <Link href="https://app.teller.org/polygon/market/25">
                                         <a className="underline">here</a>
                                     </Link> to check the loan status</div>
 
